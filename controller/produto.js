@@ -18,9 +18,10 @@ const getById = (async (req, res) =>{
 });
 
 const getByCategoria = (async (req, res) =>{
-    console.log(req.params.id)
     const categoriaId = req.params.id;
-    const q = `SELECT * FROM tb_produtos WHERE id_categoria=${categoriaId}`;
+    const q = `SELECT p.* FROM tb_produtos p
+        INNER JOIN tb_produtos_categorias pc ON pc.id_produto = p.id 
+        WHERE pc.id_categoria = ${categoriaId}`;
     db.query(q, (err, data) =>{
         if(err) return res.status(500).json(err.message); 
         return data.length != 0 ? res.status(200).json(data) : res.status(204).json(data);
@@ -29,7 +30,7 @@ const getByCategoria = (async (req, res) =>{
 
 const post = (async (req, res) => {
     const produto = req.body;
-    const q = `INSERT INTO tb_produtos (nome, preco, observacao, imagem, id_categoria) VALUES ('${produto.nome}', ${produto.preco}, '${produto.observacao}', '${produto.imagem}', '${produto.id_categoria}')`;
+    const q = `INSERT INTO tb_produtos (nome, preco, observacao, card_img, detail_img) VALUES ('${produto.nome}', ${produto.preco}, '${produto.observacao}', '${produto.card_img}', '${produto.detail_img}')`;
     db.query(q, (err, data) =>{
         if(err) return res.status(500).json(err.message); 
         return res.status(201).json({result:"ok"});
@@ -47,7 +48,7 @@ const remove = (async (req, res) => {
 
 const put = (async (req, res) => {
     const produto = req.body;
-    const q = `UPDATE tb_produtos SET nome = '${produto.nome}', preco = ${produto.preco}, observacao = '${produto.observacao}', imagem = '${produto.imagem}', id_categoria = '${produto.id_categoria}' WHERE id = ${produto.id}`;
+    const q = `UPDATE tb_produtos SET nome = '${produto.nome}', preco = ${produto.preco}, observacao = '${produto.observacao}', card_img = '${produto.card_img}', detail_img = '${produto.detail_img}' WHERE id = ${produto.id}`;
     db.query(q, (err, data) =>{
         if(err) return res.status(500).json(err.message); 
         return res.status(201).json({result:"ok"});
