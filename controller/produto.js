@@ -1,8 +1,7 @@
-const db = require("../database/db");
+const produtoRepository = require('../repository/produto');
 
 const get = (async (req, res) =>{
-    const q = "SELECT * FROM tb_produtos";
-    db.query(q, (err, data) =>{
+    await produtoRepository.get((data, err) => {
         if(err) return res.status(500).json(err.message); 
         return res.status(200).json(data);
     });
@@ -10,8 +9,7 @@ const get = (async (req, res) =>{
 
 const getById = (async (req, res) =>{
     const produtoId = req.params.id;
-    const q = `SELECT * FROM tb_produtos WHERE id=${produtoId}`;
-    db.query(q, (err, data) =>{
+    await produtoRepository.getById(produtoId, (data, err) => {
         if(err) return res.status(500).json(err.message); 
         return data.length != 0 ? res.status(200).json(data) : res.status(204).json(data);
     });
@@ -19,39 +17,36 @@ const getById = (async (req, res) =>{
 
 const getByCategoria = (async (req, res) =>{
     const categoriaId = req.params.id;
-    const q = `SELECT p.* FROM tb_produtos p
-        INNER JOIN tb_produtos_categorias pc ON pc.id_produto = p.id 
-        WHERE pc.id_categoria = ${categoriaId}`;
-    db.query(q, (err, data) =>{
+    await produtoRepository.getByCategoria(categoriaId, (data, err) => {
         if(err) return res.status(500).json(err.message); 
         return data.length != 0 ? res.status(200).json(data) : res.status(204).json(data);
     });
 });
 
 const post = (async (req, res) => {
+    if(!req.userADM) return res.status(401).json();
     const produto = req.body;
-    const q = `INSERT INTO tb_produtos (nome, preco, observacao, card_img, detail_img) VALUES ('${produto.nome}', ${produto.preco}, '${produto.observacao}', '${produto.card_img}', '${produto.detail_img}')`;
-    db.query(q, (err, data) =>{
+    await produtoRepository.create(produto, (data, err) => {
         if(err) return res.status(500).json(err.message); 
-        return res.status(201).json({result:"ok"});
+        return res.status(201).json();
+    });
+});
+
+const put = (async (req, res) => {
+    if(!req.userADM) return res.status(401).json();
+    const produto = req.body;
+    await produtoRepository.update(produto, (data, err) => {
+        if(err) return res.status(500).json(err.message); 
+        return res.status(201).json();
     });
 });
 
 const remove = (async (req, res) => {
+    if(!req.userADM) return res.status(401).json();
     const produtoId = req.params.id;
-    const q = `DELETE FROM tb_produtos WHERE id = ${produtoId}`;
-    db.query(q, (err, data) =>{
+    await produtoRepository.remove(produtoId, (data, err) => {
         if(err) return res.status(500).json(err.message); 
-        return res.status(200).json({result:"ok"});
-    });
-})
-
-const put = (async (req, res) => {
-    const produto = req.body;
-    const q = `UPDATE tb_produtos SET nome = '${produto.nome}', preco = ${produto.preco}, observacao = '${produto.observacao}', card_img = '${produto.card_img}', detail_img = '${produto.detail_img}' WHERE id = ${produto.id}`;
-    db.query(q, (err, data) =>{
-        if(err) return res.status(500).json(err.message); 
-        return res.status(201).json({result:"ok"});
+        return res.status(200).json();
     });
 });
 
